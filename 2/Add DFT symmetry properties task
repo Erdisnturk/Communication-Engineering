@@ -1,0 +1,155 @@
+### Task 2 - DFT Properties
+Investigation of DFT symmetry properties using even and odd signal decomposition.
+
+# Task: DFT Properties 2 - Symmetry Properties
+####################################################
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib
+from numpy.random import default_rng
+
+rng = default_rng()
+
+# Creation of sequence
+x = rng.random(8)
+
+# Circular time reversal: x[-n]
+xm = np.roll(np.flip(x), 1)
+
+# Even and odd decomposition
+x_even = 0.5 * (x + xm)
+x_odd = 0.5 * (x - xm)
+
+# Apply DFT
+X = np.fft.fft(x)
+Xe = np.fft.fft(x_even)
+Xo = np.fft.fft(x_odd)
+
+# Plotting settings
+matplotlib.rcParams.update({
+    'font.family': 'serif',
+    'text.usetex': False,
+    'font.size': 10,
+    'figure.max_open_warning': 100
+})
+
+if np.all(np.imag(x) == 0):  # if x is real sequence
+
+    fig, axs = plt.subplots(3, sharey='col', figsize=[5, 4], num="Random Sequence")
+
+    axs[0].vlines(np.arange(8), np.zeros(8), x)
+    axs[0].plot(x, marker='o', linestyle='')
+    axs[0].set_title(r"$x[n]$")
+    axs[0].grid()
+
+    axs[1].vlines(np.arange(8), np.zeros(8), np.real(X))
+    axs[1].plot(np.real(X), marker='o', linestyle='')
+    axs[1].set_title(r"Re$\{DFT(x)\}$")
+    axs[1].grid()
+
+    axs[2].vlines(np.arange(8), np.zeros(8), np.imag(X))
+    axs[2].plot(np.imag(X), marker='o', linestyle='')
+    axs[2].set_title(r"Im$\{DFT(x)\}$")
+    axs[2].grid()
+
+    plt.tight_layout()
+
+    fige, axse = plt.subplots(3, sharey='col', figsize=[5, 4], num="Even Sequence")
+
+    axse[0].vlines(np.arange(8), np.zeros(8), x_even)
+    axse[0].plot(x_even, marker='o', linestyle='')
+    axse[0].set_title(r"$x_{even}[n]$")
+    axse[0].grid()
+
+    axse[1].vlines(np.arange(8), np.zeros(8), np.real(Xe))
+    axse[1].plot(np.real(Xe), marker='o', linestyle='')
+    axse[1].set_title(r"Re$\{DFT(x_{even})\}$")
+    axse[1].grid()
+
+    axse[2].vlines(np.arange(8), np.zeros(8), np.imag(Xe))
+    axse[2].plot(np.imag(Xe), marker='o', linestyle='')
+    axse[2].set_title(r"Im$\{DFT(x_{even})\}$")
+    axse[2].grid()
+
+    plt.tight_layout()
+
+    figo, axso = plt.subplots(3, sharey='col', figsize=[5, 4], num="Odd Sequence")
+
+    axso[0].vlines(np.arange(8), np.zeros(8), x_odd)
+    axso[0].plot(x_odd, marker='o', linestyle='')
+    axso[0].set_title(r"$x_{odd}[n]$")
+    axso[0].grid()
+
+    axso[1].vlines(np.arange(8), np.zeros(8), np.real(Xo))
+    axso[1].plot(np.real(Xo), marker='o', linestyle='')
+    axso[1].set_title(r"Re$\{DFT(x_{odd})\}$")
+    axso[1].grid()
+
+    axso[2].vlines(np.arange(8), np.zeros(8), np.imag(Xo))
+    axso[2].plot(np.imag(Xo), marker='o', linestyle='')
+    axso[2].set_title(r"Im$\{DFT(x_{odd})\}$")
+    axso[2].grid()
+
+    plt.tight_layout()
+
+elif np.all(np.real(x) == 0):  # if x is imaginary sequence
+
+    fig, axs = plt.subplots(3, sharey='col', figsize=[5, 4], num="Random Sequence")
+
+    axs[0].vlines(np.arange(8), np.zeros(8), np.imag(x))
+    axs[0].plot(np.imag(x), marker='o', linestyle='')
+    axs[0].set_title(r"Im$\{x[n]\}$")
+    axs[0].grid()
+
+    axs[1].vlines(np.arange(8), np.zeros(8), np.real(X))
+    axs[1].plot(np.real(X), marker='o', linestyle='')
+    axs[1].set_title(r"Re$\{DFT(x)\}$")
+    axs[1].grid()
+
+    axs[2].vlines(np.arange(8), np.zeros(8), np.imag(X))
+    axs[2].plot(np.imag(X), marker='o', linestyle='')
+    axs[2].set_title(r"Im$\{DFT(x)\}$")
+    axs[2].grid()
+
+    plt.tight_layout()
+
+    fige, axse = plt.subplots(3, sharey='col', figsize=[5, 4], num="Even Sequence")
+
+    axse[0].vlines(np.arange(8), np.zeros(8), np.imag(x_even))
+    axse[0].plot(np.imag(x_even), marker='o', linestyle='')
+    axse[0].set_title(r"Im$\{x_{even}[n]\}$")
+    axse[0].grid()
+
+    axse[1].vlines(np.arange(8), np.zeros(8), np.real(Xe))
+    axse[1].plot(np.real(Xe), marker='o', linestyle='')
+    axse[1].set_title(r"Re$\{DFT(x_{even})\}$")
+    axse[1].grid()
+
+    axse[2].vlines(np.arange(8), np.zeros(8), np.imag(Xe))
+    axse[2].plot(np.imag(Xe), marker='o', linestyle='')
+    axse[2].set_title(r"Im$\{DFT(x_{even})\}$")
+    axse[2].grid()
+
+    plt.tight_layout()
+
+    figo, axso = plt.subplots(3, sharey='col', figsize=[5, 4], num="Odd Sequence")
+
+    axso[0].vlines(np.arange(8), np.zeros(8), np.imag(x_odd))
+    axso[0].plot(np.imag(x_odd), marker='o', linestyle='')
+    axso[0].set_title(r"Im$\{x_{odd}[n]\}$")
+    axso[0].grid()
+
+    axso[1].vlines(np.arange(8), np.zeros(8), np.real(Xo))
+    axso[1].plot(np.real(Xo), marker='o', linestyle='')
+    axso[1].set_title(r"Re$\{DFT(x_{odd})\}$")
+    axso[1].grid()
+
+    axso[2].vlines(np.arange(8), np.zeros(8), np.imag(Xo))
+    axso[2].plot(np.imag(Xo), marker='o', linestyle='')
+    axso[2].set_title(r"Im$\{DFT(x_{odd})\}$")
+    axso[2].grid()
+
+    plt.tight_layout()
+
+plt.show()
