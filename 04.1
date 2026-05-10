@@ -1,0 +1,108 @@
+#!/usr/local/bin/python3
+####################################################
+# Code by Communications Engineering Lab (CEL), 2022
+# Communication Lab - Chapter: DFT
+#
+# Task: Zero Padding - Frequency Estimation
+####################################################
+
+import numpy as np
+import matplotlib.pyplot as plt
+from numpy.random import default_rng
+rng = default_rng()
+
+
+## frequency estimator function
+def frequ_est(X, f):
+    # Estimates the signal frequency from the spectrum X. X is supposed to have one sinusoidal
+    # signal, if more exist, only the one with maximum power is estimated. f represents the
+    # frequencies of X.
+    index = np.argmax(np.abs(np.fft.fftshift(X)))
+    # Baseband: oscillations consists of component at f and -f
+    f_est = np.abs(f[index])
+    return f_est
+
+
+## Parameters
+# Signal length in samples
+N = 16
+# Zero Padding Factor
+ZPF = 4
+# Simulation runs
+sim_runs = 1000
+# sampling frequency
+f_s = 1000
+# sample time
+t_s = 1 / f_s
+# sent frequency
+f_radar = 90
+
+n = np.arange(N)  # Time Vector
+
+# Task: define f and f_ZP
+# Hint: use np.linspace(start,stop,num,endpoint=False)
+f = np.linspace(-f_s/2, f_s/2, N, endpoint=False)  # Frequency Vector
+f_ZP = np.linspace(-f_s/2, f_s/2, N*ZPF, endpoint=False)  # Frequency Vector with Zero-Padding
+
+error_f = np.zeros(sim_runs)  # Error without ZP
+error_f_ZP = np.zeros(sim_runs)  # Error with ZP
+
+plot_spectrum = 1
+
+## Simulation
+for sim_iter in range(sim_runs):
+    # Creation of signal
+    # random frequency from [f_s/10, 4f_s/10]
+    f_0 = f_s / 2 * (1 / 5 + 0.6 * rng.random())+f_radar
+    # signal with one frequency component
+    x = np.cos(2 * np.pi * f_0 * n * t_s)
+    # Add Gaussian noise
+    x_noisy = x + 0.1 * rng.standard_normal(N)
+    X_fft = np.fft.fft(x_noisy)
+    X_fft_ZP = np.fft.fft(x_noisy, N * ZPF)
+
+    f_est = frequ_est(X_fft, f)-f_radar
+    f_est_ZP = frequ_est(X_fft_ZP, f_ZP)-f_radar
+
+    error_f[sim_iter] = f_est - f_0
+    error_f_ZP[sim_iter] = f_est_ZP - f_0
+
+# Calculate root-mean-square error (RMSE).
+rmse = np.sqrt(np.var(error_f))
+rmse_ZP = np.sqrt(np.var(error_f_ZP))
+
+print("RMSE error without zero-padding is: ", rmse)
+print("RMSE error with zero-padding is: ", rmse_ZP)
+
+# Plotting
+if plot_spectrum == 1:
+    plt.figure("Spectrum with estimates last sample", figsize=[5, 4])
+
+    plt.plot(f_ZP,
+             10 * np.log10(np.abs(np.fft.fftshift(X_fft_ZP))),
+             color="green",
+             label="Spectrum ZP")
+    plt.plot(f_est_ZP,
+             np.max(10 * np.log10(np.abs(np.fft.fftshift(X_fft_ZP)))),
+             color="green",
+             marker='o',
+             linestyle='')
+
+    plt.plot(f,
+             10 * np.log10(np.abs(np.fft.fftshift(X_fft))),
+             color="orange",
+             label="Spectrum without ZP")
+    plt.plot(f_est,
+             np.max(10 * np.log10(np.abs(np.fft.fftshift(X_fft)))),
+             color="orange",
+             marker='x',
+             linestyle='')
+
+    plt.vlines(f_0, -10, 10, label='target frequency', linestyle='--')
+    plt.ylim(-4, 10)
+    plt.ylabel("Density Spectrum (dB)")
+    plt.xlabel("Frequency (Hz)")
+    plt.grid()
+    plt.legend(loc=3)
+    plt.tight_layout()
+    plt.show()
