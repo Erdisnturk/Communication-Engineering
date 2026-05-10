@@ -1,0 +1,11 @@
+# Communication Engineering
+
+## DFT Implementation in Python
+
+This project implements the Discrete Fourier Transform (DFT) directly from its mathematical definition and compares its runtime with NumPy FFT.
+
+### Features
+- Manual DFT implementation
+- FFT comparison using NumPy
+- Runtime analysis
+- Frequency-domain visualization
