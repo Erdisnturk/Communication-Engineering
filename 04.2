@@ -1,0 +1,84 @@
+
+# Task: Zero Padding - Frequency Resolution
+####################################################
+
+import numpy as np
+import matplotlib.pyplot as plt
+from numpy.random import default_rng
+rng = default_rng()
+
+## Parameters
+N = 32  # Signal length in sampels
+ZPF = 32  # Zero Padding Factor
+N_long = N * int(ZPF / 4)  # Signal length for long vector
+
+f_s = 1000  # sampling frequency
+t_s = 1 / f_s  # sample time
+
+n = np.arange(N)  # Time Vector
+n_long = np.arange(N_long)  # Time Vector long vector
+
+#TODO Task: define f, f_ZP, f_long, f_long_ZP
+# Hint: use np.linspace(start,stop,num,endpoint=False)
+# Frequency Vector
+f = np.linspace(-f_s/2, f_s/2, N, endpoint=False) 
+# Frequency Vector with Zero-Padding
+f_ZP = np.linspace(-f_s/2, f_s/2, N *ZPF, endpoint=False) 
+# Frequency for long time vector
+f_long = np.linspace(-f_s/2, f_s/2, N_long, endpoint=False) 
+# Frequency for long time vector, ZP
+f_long_ZP = np.linspace(-f_s/2, f_s/2, N_long * ZPF, endpoint=False) 
+
+## Simulation
+
+f_0 = 312.5
+f_1 = 304
+
+freq_separation = abs(f_0-f_1)
+delta_f= f_s/N
+delta_f_long = f_s/N_long
+
+print(f"Frequency separation: {freq_separation}")
+print(f"delta f = {delta_f}\ndelta f long = {delta_f_long}")
+
+if freq_separation > delta_f:
+    print("Short observation can distinguish two frequencies.")
+else:
+    print("Frequencies are too close for short observation.")
+
+if freq_separation > delta_f_long:
+    print("Long observation can distinguish two frequencies.")
+else:
+    print("Frequencies are too close for long observation.")
+
+
+x = np.cos(2 * np.pi * f_0 * n * t_s) + np.cos(2 * np.pi * f_1 * n * t_s)
+x_long = np.cos(2 * np.pi * f_0 * n_long * t_s) + np.cos(
+    2 * np.pi * f_1 * n_long * t_s)
+x_noisy = x + 0.1 * rng.standard_normal(N)  # Add Gaussian noise
+x_long_noisy = x_long + 0.1 * rng.standard_normal(N_long)
+
+X_fft = np.fft.fft(x_noisy)
+X_fft_ZP = np.fft.fft(x_noisy, N * ZPF)
+X_fft_long = np.fft.fft(x_long_noisy)
+X_fft_ZP_long = np.fft.fft(x_long_noisy, N_long * ZPF)
+
+# Plotting
+
+plt.figure("Spectrum", figsize=[5, 4])
+plt.plot(f, 10 * np.log10(np.abs(np.fft.fftshift(X_fft))),
+         label="no ZP + short observation")
+plt.plot(f_ZP, 10 * np.log10(np.abs(np.fft.fftshift(X_fft_ZP))),
+         label="ZP + short observation")
+plt.plot(f_long, 10 * np.log10(np.abs(np.fft.fftshift(X_fft_long))),
+         label="no ZP + long observation")
+plt.plot(f_long_ZP, 10 * np.log10(np.abs(np.fft.fftshift(X_fft_ZP_long))),
+         label="ZP + long observation")
+
+plt.ylabel("Density Spectrum (dB)")
+plt.xlabel("Frequency (Hz)")
+plt.xlim(0, 500)
+plt.grid()
+plt.legend(loc=3)
+plt.tight_layout()
+plt.show()
