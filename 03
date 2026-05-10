@@ -1,1 +1,110 @@
 
+# Time Bandwidth Product
+#
+# This task investigates the relation between
+# signal duration in time domain and bandwidth
+# in frequency domain.
+####################################################
+
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
+
+# Parameters
+sigma_squared = 0.1 ** 2
+N = 1000
+t_s = 0.01
+f_s = 1 / t_s
+
+t = np.arange(-N * t_s / 2, N * t_s / 2, t_s)
+f = np.arange(-f_s / 2, f_s / 2, f_s / N)
+
+def gauss(t, var):
+    """Generate Gaussian signal and its frequency spectrum."""
+    xt = np.exp((-t ** 2) / (2 * var))
+    Xf = np.fft.fftshift(np.fft.fft(xt))
+    return xt, np.abs(Xf)
+
+def rect(t, n):
+    """Generate rectangular signal and its frequency spectrum."""
+    n = max(1, min(n, len(t)))
+
+    if n % 2 != 0:
+        n += 1
+
+    pad_left = int((len(t) - n) / 2)
+    pad_right = len(t) - n - pad_left
+
+    xt = np.pad(np.ones(n), (pad_left, pad_right))
+    Xf = np.fft.fftshift(np.fft.fft(xt))
+
+    return xt, np.abs(Xf)
+
+def Delta(t, sigIN, s):
+    """Calculate the standard deviation-like width of a signal."""
+    energy_dens = np.abs(sigIN) ** 2
+    energy = np.sum(energy_dens) * s
+
+    mean = np.trapz(t * energy_dens, dx=s) / energy
+    delta = np.sqrt(np.trapz((t - mean) ** 2 * energy_dens, dx=s) / energy)
+
+    return delta
+
+# Calculate time-bandwidth product for Gaussian signal
+Delta_t = Delta(t, gauss(t, sigma_squared)[0], t_s)
+Delta_f = Delta(f, gauss(t, sigma_squared)[1], f_s / N)
+
+print("Delta_t:", Delta_t)
+print("Delta_f:", Delta_f)
+print("Time-Bandwidth Product:", Delta_t * Delta_f)
+
+# Plot settings
+matplotlib.rcParams.update({
+    'font.family': 'serif',
+    'text.usetex': False,
+    'font.size': 10,
+    'figure.max_open_warning': 100
+})
+
+# Create figure
+fig, axs = plt.subplots(2, figsize=[7, 6])
+
+line1 = axs[0].plot(t, gauss(t, sigma_squared)[0])[0]
+axs[0].set_title(r"$x[n]$")
+axs[0].set_ylim(0, 1)
+axs[0].grid()
+
+line2 = axs[1].plot(f, gauss(t, sigma_squared)[1])[0]
+axs[1].set_title(r"$|DFT(x)|$")
+axs[1].set_ylim(0, np.max(gauss(t, sigma_squared)[1]))
+axs[1].grid()
+
+# Make room for slider
+fig.subplots_adjust(left=0.25)
+
+# Slider
+axsigma = plt.axes([0.1, 0.25, 0.0225, 0.63])
+sigma_slider = Slider(
+    ax=axsigma,
+    label=r"$\sigma_t$",
+    valmin=0.001,
+    valmax=np.pi,
+    valinit=sigma_squared,
+    orientation="vertical"
+)
+
+def update(val):
+    """Update rectangular pulse width and its spectrum."""
+    width = int(sigma_slider.val * 50)
+    xt, Xf = rect(t, width)
+
+    line1.set_ydata(xt)
+    line2.set_ydata(Xf)
+
+    axs[1].set_ylim(0, np.max(Xf))
+    fig.canvas.draw_idle()
+
+sigma_slider.on_changed(update)
+
+plt.show()
